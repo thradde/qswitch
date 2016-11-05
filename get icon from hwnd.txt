@@ -1,0 +1,224 @@
+public Icon GetAppIcon(IntPtr hwnd)
+{
+  IntPtr iconHandle = SendMessage(hwnd,WM_GETICON,ICON_SMALL2,0);
+  if(iconHandle == IntPtr.Zero)
+    iconHandle = SendMessage(hwnd,WM_GETICON,ICON_SMALL,0);
+  if(iconHandle == IntPtr.Zero)
+    iconHandle = SendMessage(hwnd,WM_GETICON,ICON_BIG,0);
+  if (iconHandle == IntPtr.Zero)
+    iconHandle = GetClassLongPtr(hwnd, GCL_HICON);
+  if (iconHandle == IntPtr.Zero)
+    iconHandle = GetClassLongPtr(hwnd, GCL_HICONSM);
+ 
+  if(iconHandle == IntPtr.Zero)
+    return null;
+ 
+  Icon icn = Icon.FromHandle(iconHandle);
+ 
+  return icn;
+}
+The constants and other methods used:
+
+public const int GCL_HICONSM = -34;
+public const int GCL_HICON = -14;
+ 
+public const int ICON_SMALL = 0;
+public const int ICON_BIG = 1;
+public const int ICON_SMALL2 = 2;
+ 
+public const int WM_GETICON = 0x7F;
+ 
+public static IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex)
+{
+  if (IntPtr.Size > 4)
+    return GetClassLongPtr64(hWnd, nIndex);
+  else
+    return new IntPtr(GetClassLongPtr32(hWnd, nIndex));
+}
+ 
+[DllImport("user32.dll", EntryPoint = "GetClassLong")]
+public static extern uint GetClassLongPtr32(IntPtr hWnd, int nIndex);
+ 
+[DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
+public static extern IntPtr GetClassLongPtr64(IntPtr hWnd, int nIndex);
+ 
+[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+Process Name from hwnd
+......................
+Retrieve the window's process with GetWindowThreadProcessId.
+Open the process with PROCESS_QUERY_INFORMATION and PROCESS_VM_READ access rights using OpenProcess.
+Use GetModuleFileNameEx on the process handle.
+If you really want to obtain the name of the module with which the window is registered (as opposed to the process executable),
+you can obtain the module handle with GetWindowLongPtr with GWLP_HINSTANCE. The module handle can then be passed to the 
+aforementioned GetModuleFileNameEx.
+
+
+Get WIndow Title: GetWindowText
+Now I can update my little focus-spy utility app to try: 
+GetWindowText() if (text length == 0) SendMessageTimeout( ... WM_GETTEXT ... ); 
+...just did it and it works beautifully. Thanks for sharing!
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Region Window
+.............
+
+Win32 Regions
+
+A region is just a shape that can be used to receive the same messages that a normal window would receive. To apply a 
+region to a window, you must first declare a region handle (HRGN), define the region with calls to CreateRectRgn, 
+CreateEllipticRgn, or CreatePolygonRgn (and there are others beyond this -- see the Win32 documentation), combine your 
+regions into one region with calls to CombineRgn, and then apply the final region to your window with a call to SetWindowRgn.
+
+Because a region is an object, you should DeleteObject them when you are through with them.
+
+Here's an example, which creates a sort of "figure 8" region, and applies it to our window (with handle hWnd):
+
+HRGN hRegion1 = CreateEllipticRgn(0, 0  , 200, 200);
+HRGN hRegion2 = CreateEllipticRgn(0, 180, 200, 200);
+
+CombineRgn(hRegion1, hRegion1, hRegion2, RGN_OR);
+
+SetWindowRgn(hWnd, hRegion1, true);
+
+DeleteObject(hRegion1);
+DeleteObject(hRegion2);
+
+
+
+This code block defines two elliptical regions and combines them into a "figure 8" shape by ORing them (RGN_OR) with
+ the CombineRgn function. It then applies the region to the hWnd window with a call to SetWindowRgn.
+
+Take a look at the source. I've added a member function to the PortScannerWindow class that creates a region the same
+ size and shape of the app window. Because I'll want my skin to cover the entire window, I'll need to make sure the 
+ entire window is covered by this region.
+
+The member function that does this is Regionize(). It takes no parameters, and its task is to figure out the window 
+size and create the appropriate region to cover it.
+
+Here's the definition:
+
+// Remove title bar and prevent resizing
+DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+dwStyle &= ~(WS_CAPTION|WS_SIZEBOX);
+SetWindowLong(m_hWnd, GWL_STYLE, dwStyle);
+
+// Define and set the region
+HRGN hRegion = CreateRectRgn(0, 0, m_pRect->right-m_pRect->left, m_pRect->bottom-m_pRect->top);
+
+SetWindowRgn(m_hWnd, hRegion, true);
+
+DeleteObject(hRegion);
+
+return TRUE;
+
+
+
+Notice also the bit of code that retrieves the window long from our app window, and removes the WS_CAPTION and 
+WS_SIZEBOX styles if they exist. Essentially we are removing the title bar and preventing the window from being 
+resized by the user -- you can, of course, have skins that can be resized, but let's not make this harder than 
+it need be. And the title bar doesn't do us any good, since we're laying a bitmap over it in a few minutes, so... hasta.
+
+We call this member function from WinMain, immediately after calling Show(). This function should definitely do 
+some error checking, since the calls could fail, but we'll leave that until later (so we'll have something to do 
+when we tighten this thing down for release!)
+
+(If you want to have more fun than just creating a rectangular region, change CreateRectRegion to CreateEllipticRgn 
+in the function to make your window a perfect circle. Neat!)
+
+
+Demo Source complete
+....................
+#include <windows.h>
+
+int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE, LPSTR, int cmdShow)
+{
+    WNDCLASSEX wincl;               
+    wincl.hInstance = hThisInstance;
+    wincl.lpszClassName = "win32app";
+    wincl.lpfnWndProc = WndProc;
+    wincl.style = CS_HREDRAW | CS_VREDRAW;
+    wincl.cbSize = sizeof(WNDCLASSEX);
+    wincl.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wincl.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+    wincl.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wincl.lpszMenuName = 0;
+    wincl.cbClsExtra = wincl.cbWndExtra = 0;
+    wincl.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+
+    RegisterClassEx(&wincl);
+
+    HWND hwnd = CreateWindowEx(0,wincl.lpszClassName,"Regions",
+      WS_POPUP,500,500,200, 200,0,0,hThisInstance,0);
+
+    ShowWindow(hwnd, cmdShow);
+
+   MSG msg;
+    while(GetMessage(&msg,0,0,0)) {
+       TranslateMessage(&msg);
+       DispatchMessage(&msg);
+    }                      
+    return msg.wParam;
+}
+
+LRESULT WINAPI WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   switch(message)
+   {
+      case WM_CREATE:
+           {
+             HRGN hRgn1 = CreateEllipticRgn(0,0,200,200);
+             HRGN hRgn2 = CreateEllipticRgn(50,50,150,150);
+             CombineRgn(hRgn1,hRgn1,hRgn2,RGN_XOR);
+             DeleteObject(hRgn2);
+
+             CreateWindow("button","Exit",WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            50,20,100,20,hwnd,(HMENU)100,(HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),0);
+
+             SetWindowRgn(hwnd, hRgn1, 1);
+           } return 0;
+
+      case WM_COMMAND:
+           if(LOWORD(wParam)==100) {
+              SendMessage(hwnd, WM_CLOSE, 0, 0);
+              return 0;
+           } break;
+
+     case WM_LBUTTONDOWN:
+        SendMessage(hwnd,WM_NCLBUTTONDOWN,HTCAPTION,0);
+        return 0;
+
+      case WM_DESTROY:
+           PostQuitMessage(0);
+           return 0;
+
+      default:                
+           return DefWindowProc(hwnd, message, wParam, lParam);
+   }
+}
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+
+bool setTransparency(HWND hWnd, unsigned char alpha)
+{
+	SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+	SetLayeredWindowAttributes(hWnd, 0, alpha, LWA_ALPHA);
+	return true;
+}
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+Live Thumbnail Preview
+......................
+https://msdn.microsoft.com/en-us/library/aa969541.aspx
