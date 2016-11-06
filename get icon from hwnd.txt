@@ -1,3 +1,5 @@
+// this line is just a test of git
+
 public Icon GetAppIcon(IntPtr hwnd)
 {
   IntPtr iconHandle = SendMessage(hwnd,WM_GETICON,ICON_SMALL2,0);
