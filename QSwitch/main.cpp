@@ -1406,6 +1406,8 @@ public:
 
 		HWND hWnd = m_Window.getSystemHandle();
 		SetHookAppWindow(hWnd);
+		SetHookInstance(ghInstance);
+
 		if (m_bStartup && !m_bFirstTime)
 		{
 //			ShowWindow(hWnd, SW_HIDE);

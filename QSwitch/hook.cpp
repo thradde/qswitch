@@ -48,6 +48,7 @@ volatile bool gbHookDoubleClick;// same as above for mouse double click (used fo
 volatile bool gbFilterKey;		// true, if process-filtered view app activation
 
 static HWND		_hWndApp;
+static HINSTANCE _hInstance;
 static int		gnDoubleClickTime;	// user preferences value from registry
 static __int64	gnDblClickStartTime;
 static __int64	gnPerformanceFreq;
@@ -93,7 +94,7 @@ inline bool IsWinKeyDown()
 // --------------------------------------------------------------------------------------------------------------------------------------------
 LRESULT __stdcall KbdHookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (!gbSuspendHooks && gbHotkeyVKey != 0 && nCode >= 0)
+	if (!gbSuspendHooks && gbHotkeyVKey != 0 && nCode >= 0)
     {
         if (wParam == WM_KEYDOWN)
         {
@@ -180,7 +181,7 @@ static void CheckDoubleClick()
 // --------------------------------------------------------------------------------------------------------------------------------------------
 LRESULT __stdcall MouseHookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (!gbSuspendHooks && nCode >= 0)
+	if (!gbSuspendHooks && nCode >= 0)
     {
 		MSLLHOOKSTRUCT *mouseStruct = ((MSLLHOOKSTRUCT *)lParam);
 
@@ -239,6 +240,15 @@ void SetHookAppWindow(HWND hWndApp)
 
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
+//															SetHookInstance()
+// --------------------------------------------------------------------------------------------------------------------------------------------
+void SetHookInstance(HINSTANCE hInstance)
+{
+	_hInstance = hInstance;
+}
+
+
+// --------------------------------------------------------------------------------------------------------------------------------------------
 //																SetHooks()
 // --------------------------------------------------------------------------------------------------------------------------------------------
 static bool SetHooks()
@@ -266,6 +276,8 @@ static bool SetHooks()
 	gnPerformanceFreq /= 1000;	// we want milliseconds later
 	gnDblClickStartTime = 0;
 
+	// GetSystemMetrics(SM_CXSCREEN / SM_CYSCREEN) return bogus values, if screen scaling is set.
+	// Solution: Include manifest file, which tells Windows that this app is DPI aware.
 	int width = GetSystemMetrics(SM_CXSCREEN);
 	int height = GetSystemMetrics(SM_CYSCREEN);
 	_rcHoverArea.left = width - 5;
@@ -274,10 +286,10 @@ static bool SetHooks()
 	_rcHoverArea.bottom = 5;
 
 	// create hooks
-    if (!(_kbd_hook = SetWindowsHookEx(WH_KEYBOARD_LL, KbdHookCallback, NULL, 0)))
+    if (!(_kbd_hook = SetWindowsHookEx(WH_KEYBOARD_LL, KbdHookCallback, _hInstance, 0)))
 		return false;
 
-	if (!(_mouse_hook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookCallback, NULL, 0)))
+	if (!(_mouse_hook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookCallback, _hInstance, 0)))
 		return false;
 
 	return true;

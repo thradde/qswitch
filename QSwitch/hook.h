@@ -28,6 +28,7 @@ extern volatile bool gbFilterKey;		// true, if process-filtered view app activat
 
 
 void SetHookAppWindow(HWND hWndApp);
+void SetHookInstance(HINSTANCE hInstance);
 bool SetHooks();
 void ReleaseHooks();
 void RunHookThread();
