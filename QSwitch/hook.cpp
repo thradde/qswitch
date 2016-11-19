@@ -353,7 +353,7 @@ void _SetThreadName(DWORD dwThreadID, LPCTSTR threadName)
 #endif
 
 
-unsigned __stdcall HookThread(void *param)
+DWORD WINAPI HookThread(void *param)
 {
 	SetThreadName(-1, _T("HookThread"));	// this is only for the debugger
 	SetHooks();
@@ -374,6 +374,12 @@ unsigned __stdcall HookThread(void *param)
 
 void RunHookThread()
 {
-	unsigned aID;
-	_hHookThread = (HANDLE)_beginthreadex(NULL, 0, HookThread, NULL, 0, &aID);
+	DWORD aID;
+
+	if (_hHookThread = CreateThread(NULL, 8 * 1024, HookThread, NULL, 0, &aID))
+	{
+		// boost thread priority, otherwise mouse lags under certain conditions.
+		// especially when plugging-in USB devices, the mouse can lag so much that Windows stops this program!
+		SetThreadPriority(_hHookThread, THREAD_PRIORITY_TIME_CRITICAL);
+	}
 }
