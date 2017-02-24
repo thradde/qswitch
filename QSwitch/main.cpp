@@ -1447,7 +1447,8 @@ public:
 		// (whatever Threaded Optimization means... found it using google)
 		//	m_Window.setFramerateLimit(60);
 //m_Window.setVerticalSyncEnabled(true);
-m_Window.setVerticalSyncEnabled(false);
+m_Window.setFramerateLimit(0);
+m_Window.setVerticalSyncEnabled(true);
 
 		m_bStartup = false;
 		//CheckNagScreen();		==> done in ShowMainWindow()
