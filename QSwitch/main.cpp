@@ -1474,12 +1474,12 @@ m_Window.setVerticalSyncEnabled(true);
 		// don't make it too easy, scramble a bit (so year constant can not be found in hex editor)
 		time.wYear -= 2000;
 
-		// run until 2018/01/01
-		if (time.wYear >= 18 && time.wMonth >= 1)
+		// run until 2019/01/01
+		if (time.wYear >= 19 && time.wMonth >= 1)
 		{
 			MessageBox(m_Window.getSystemHandle(),
 				_T("The beta period for \"" APP_NAME "\" has expired.\n\n")
-				_T("Please check at www.idealsoftware.com, if a newer version is available.\n\n"),
+				_T("Please check at www.tenware.net, if a newer version is available.\n\n"),
 				APP_NAME, MB_ICONERROR);
 			exit(1);
 		}
