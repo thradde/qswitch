@@ -983,7 +983,12 @@ void CWinGroup::BuildGroups(RString path)
 	{
 		// pull-up title
 		m_GroupHeader.m_strTitle += m_Group[0].m_GroupHeader.m_strTitle;
-		for (auto &&it : m_Group[0].m_Group)
+
+		// we must copy the group here first, because using "m_Group[0].m_Group" directly in the for-loop below
+		// leads to runtime-error "vector iterator not incrementable". Maybe, because adding nodes to m_Group
+		// re-allocates m_Group, and therefore m_Group[0].m_Group is no longer valid?
+		TWinGroupArray group = m_Group[0].m_Group;
+		for (auto &&it : group)
 			m_Group.push_back(it);
 		m_Group.erase(m_Group.begin());
 	}
