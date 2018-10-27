@@ -2124,11 +2124,11 @@ m_Window.setVerticalSyncEnabled(true);
 
 		float text_x_offset;
 		float text_y_offset;
-		float text_line_spacing = floor(m_pText->getFont()->getLineSpacing((int)(m_pText->getCharacterSize()))) + 1;	// round down looks better
-		float header_line_spacing = ICON_PIXELS + 4;
-		float next_header_spacing = 4;
+		const float text_line_spacing = floor(m_pText->getFont()->getLineSpacing((int)(m_pText->getCharacterSize()))) + 1;	// round down looks better
+		const float header_line_spacing = ICON_PIXELS + 4;
+		const float next_header_spacing = 4;
 		float line_spacing;
-		float x_base = 0;
+		const float x_base = 0;
 		float y = 1; // 20;
 		bool is_first_line = true;
 		int prev_level = 0;
@@ -2140,7 +2140,7 @@ m_Window.setVerticalSyncEnabled(true);
 			if (line == m_nCursorLine)
 			{
 				// highlight line
-				sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop)), 9.f, 10);
+				sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
 				rect.setPosition(1, (float)it.m_nYTop);
 				rect.setFillColor(sf::Color(0x00, 0x60, 0xff));
 				rect.setOutlineColor(sf::Color::White);
@@ -2149,7 +2149,7 @@ m_Window.setVerticalSyncEnabled(true);
 			}
 
 			text_x_offset = 0;
-			text_y_offset = 6;
+			text_y_offset = 1;
 			line_spacing = text_line_spacing;
 
 			float x = x_base + 10;	// make room for rounded corners on left side of highlighting box
@@ -2174,36 +2174,27 @@ m_Window.setVerticalSyncEnabled(true);
 				// draw big icon
 				if (!is_first_line)
 					y += next_header_spacing;
-				it.m_nYTop = (int)y;
-				it.m_WinDesc.m_Icon.m_Sprite.setPosition(x, y + 2);
+				it.m_WinDesc.m_Icon.m_Sprite.setPosition(x, y + (next_header_spacing / 2));
 				text_x_offset = ICON_PIXELS + 8.f;
 				m_Window.draw(it.m_WinDesc.m_Icon.m_Sprite);
 				line_spacing = header_line_spacing;
-				text_y_offset += 2;
 			}
 			else if (!it.m_bIsHeader)
 			{
 				// draw small icon
-				int SMALL_ICON_PIXELS = m_nLineSpacing;
-				if (SMALL_ICON_PIXELS < 16)
-					SMALL_ICON_PIXELS = 16;
-				const int y_off = (ICON_PIXELS - SMALL_ICON_PIXELS) / 2;
-				it.m_nYTop = (int)y + y_off;
-				const int shift_down = 4;
-				it.m_nYTop += shift_down;
-				text_y_offset += shift_down;
-				it.m_WinDesc.m_Icon.m_Sprite.setPosition(x, y + y_off + 1.5f * shift_down);
-				text_x_offset = SMALL_ICON_PIXELS + 4.f;
-				float factor = (float)SMALL_ICON_PIXELS / (float)ICON_PIXELS;
+				line_spacing = (float)(m_nLineSpacing) + next_header_spacing;
+				if (line_spacing < 16)
+					line_spacing = 16;
+				it.m_WinDesc.m_Icon.m_Sprite.setPosition(x, y + (next_header_spacing / 2));
+				text_x_offset = line_spacing + 4.f;
+				float factor = (float)(m_nLineSpacing) / (float)ICON_PIXELS;
 				it.m_WinDesc.m_Icon.m_Sprite.setScale(factor, factor);
 				m_Window.draw(it.m_WinDesc.m_Icon.m_Sprite);
 				it.m_WinDesc.m_Icon.m_Sprite.setScale(1.f, 1.f);
-				line_spacing = (float)SMALL_ICON_PIXELS + 6;
 			}
-			else
-				it.m_nYTop = (int)(y + text_y_offset);
 
-			it.m_nYBottom = it.m_nYTop + (int)line_spacing;
+			it.m_nYTop = (int)y;
+			it.m_nYBottom = it.m_nYTop + (int)line_spacing + 1;
 
 			// draw title or process name
 			m_pText->setString(it.m_strTitle.c_str());
@@ -2223,6 +2214,8 @@ m_Window.setVerticalSyncEnabled(true);
 				//m_pText->setCharacterSize(14);
 			}
 
+			text_y_offset += (line_spacing - text_line_spacing) / 2;
+
 			m_pText->setPosition(x + text_x_offset + 1, y + 1 + text_y_offset);
 			m_pText->setColor(sf::Color(0x40, 0x40, 0x40));
 			m_Window.draw(*m_pText);
@@ -2231,7 +2224,7 @@ m_Window.setVerticalSyncEnabled(true);
 			m_pText->setColor(text_color);
 			m_Window.draw(*m_pText);
 
-			y += line_spacing;
+			y += line_spacing + 1;
 			is_first_line = false;
 			line++;
 		}
