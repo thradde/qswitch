@@ -1182,6 +1182,8 @@ protected:
 	bool			m_bStartup;				// true, if the main window is created at startup of app
 	bool			m_bFirstTime;			// true, if this app is run the very first time
 
+	RString			m_strLicense;			// owner of license
+
 	CTaskbar		m_Taskbar;
 	int				m_nLeft;				// left position of app window
 	int				m_nTop;					// top position of app window
@@ -1208,6 +1210,10 @@ public:
 			m_bFirstTime(false),
 			m_nFontSize(14)
 	{
+#if 0
+		m_strLicense = _T("Registered to: Heinz Hartstein • Heinz-Hartstein@Arcor.de • Erlenweg  55 • 47877 Willich - Neersen");
+#endif
+
 		m_enWindowStyle = enWsWindowed;
 		gbHotkeyVKey = 0;		// virtual key code for app activation
 		gbHotkeyModifiers = 0;	// modifiers for app activation (shift, ctrl, alt)
@@ -1472,6 +1478,7 @@ m_Window.setVerticalSyncEnabled(true);
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	void CheckNagScreen()
 	{
+#if 0
 		SYSTEMTIME time;
 		
 		GetSystemTime(&time);
@@ -1488,6 +1495,7 @@ m_Window.setVerticalSyncEnabled(true);
 				APP_NAME, MB_ICONERROR);
 			exit(1);
 		}
+#endif
 	}
 
 
@@ -2231,6 +2239,22 @@ m_Window.setVerticalSyncEnabled(true);
 
 		// restore view (background may not be drawn with a view applied)
 		m_Window.setView(m_InitialView);
+
+		// draw license string
+		if (!m_strLicense.empty())
+		{
+			float x = 20.f;
+			float y = (float)(m_nWindowHeight - 40);
+
+			m_pText->setString(m_strLicense.c_str());
+			m_pText->setPosition(x + 1, y + 1);
+			m_pText->setColor(sf::Color(0x40, 0x40, 0x40));
+			m_Window.draw(*m_pText);
+
+			m_pText->setPosition(x, y);
+			m_pText->setColor(sf::Color(255, 255, 255));
+			m_Window.draw(*m_pText);
+		}
 	}
 };
 
