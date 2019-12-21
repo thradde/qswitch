@@ -1160,6 +1160,9 @@ protected:
 	sf::Texture		m_BackTexture;
 	sf::Sprite		m_BackSprite;
 
+	int				m_nMouseX;
+	int				m_nMouseY;
+
 	bool			m_bFilteredView;		// true, if filtered view
 	TLinearWinArray	m_Windows;
 	CSfmlMemoryFont	*m_pFont;
@@ -1198,6 +1201,8 @@ public:
 	CMyApp()
 		:	CSfmlApp(),
 			m_BackBitmap(nullptr),
+			m_nMouseX(0),
+			m_nMouseY(0),
 			m_bFilteredView(false),
 			m_pFont(nullptr),
 			m_pText(nullptr),
@@ -1416,6 +1421,8 @@ public:
 		m_Window.setIcon(app_icon.width, app_icon.height, app_icon.pixel_data); 
 
 		HWND hWnd = m_Window.getSystemHandle();
+
+		// install hooks
 		SetHookAppWindow(hWnd);
 		SetHookInstance(ghInstance);
 
@@ -1724,7 +1731,12 @@ m_Window.setVerticalSyncEnabled(true);
 				size_t i = 0;
 				for (auto &&it : m_Windows)
 				{
-					if (mouse_y > it.m_nYTop && mouse_y <= it.m_nYBottom + 1)
+					// compute mouse-hover bottom coordinate of current line
+					int bottom = it.m_nYBottom + 1;
+					if (i + 1 < m_Windows.size())
+						bottom = m_Windows[i + 1].m_nYTop;
+
+					if (mouse_y >= it.m_nYTop && mouse_y < bottom)
 					{
 						// skip non-clickable lines
 						while (i < m_Windows.size() && !m_Windows[i].m_bIsClickable)
@@ -1767,8 +1779,8 @@ m_Window.setVerticalSyncEnabled(true);
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	void OnMouseMove(const sf::Event &event) override
 	{
-		int mouse_x = event.mouseMove.x;	// +m_IconManager.GetCurrentPageNum() * gConfig.m_nWindowWidth;
-		int mouse_y = event.mouseMove.y;
+		m_nMouseX = event.mouseMove.x;	// +m_IconManager.GetCurrentPageNum() * gConfig.m_nWindowWidth;
+		m_nMouseY = event.mouseMove.y;
 	}
 
 
@@ -2142,9 +2154,16 @@ m_Window.setVerticalSyncEnabled(true);
 		int prev_level = 0;
 
 		int line = 0;
+		int mouse_y = m_nMouseY - m_nListTop;		// subtract list-view top
+		mouse_y += m_Windows[m_nTopLine].m_nYTop;	// add scroll position
 
 		for (auto &&it : m_Windows)
 		{
+			// compute mouse-hover bottom coordinate of current line
+			int bottom = it.m_nYBottom + 1;
+			if (line + 1 < m_Windows.size())
+				bottom = m_Windows[line + 1].m_nYTop;
+
 			if (line == m_nCursorLine)
 			{
 				// highlight line
@@ -2154,6 +2173,29 @@ m_Window.setVerticalSyncEnabled(true);
 				rect.setOutlineColor(sf::Color::White);
 				rect.setOutlineThickness(1);
 				m_Window.draw(rect);
+			}
+			else if (mouse_y >= it.m_nYTop && mouse_y < bottom)
+			{
+				if (it.m_bIsClickable)
+				{
+					// soft highlight line
+					sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
+					rect.setPosition(1, (float)it.m_nYTop);
+					rect.setFillColor(sf::Color(0x00, 0xa0, 0xff));
+					rect.setOutlineColor(sf::Color(0x80, 0x80, 0x80));
+					rect.setOutlineThickness(1);
+					m_Window.draw(rect);
+				}
+				else
+				{
+					// draw hollow frame
+					sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
+					rect.setPosition(1, (float)it.m_nYTop);
+					rect.setFillColor(sf::Color::Transparent);
+					rect.setOutlineColor(sf::Color(0x80, 0x80, 0x80));
+					rect.setOutlineThickness(1);
+					m_Window.draw(rect);
+				}
 			}
 
 			text_x_offset = 0;
