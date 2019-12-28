@@ -2174,7 +2174,7 @@ m_Window.setVerticalSyncEnabled(true);
 				rect.setOutlineThickness(1);
 				m_Window.draw(rect);
 			}
-			else if (mouse_y >= it.m_nYTop && mouse_y < bottom)
+			else if (m_nMouseX >= m_nListLeft && mouse_y >= it.m_nYTop && mouse_y < bottom)
 			{
 				if (it.m_bIsClickable)
 				{
