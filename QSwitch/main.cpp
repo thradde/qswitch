@@ -2164,7 +2164,27 @@ m_Window.setVerticalSyncEnabled(true);
 			if (line + 1 < m_Windows.size())
 				bottom = m_Windows[line + 1].m_nYTop;
 
-			if (line == m_nCursorLine)
+			if (m_nMouseX >= m_nListLeft && mouse_y >= it.m_nYTop && mouse_y < bottom)
+			{
+				sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
+				rect.setPosition(1, (float)it.m_nYTop);
+
+				if (it.m_bIsClickable)
+				{
+					// soft highlight line
+					rect.setFillColor(sf::Color(0x00, 0xa0, 0xff));
+				}
+				else
+				{
+					// non-clickable line, draw dark green frame
+					rect.setFillColor(sf::Color(0x1d, 0x29, 0x51));
+				}
+
+				rect.setOutlineColor(sf::Color(0x80, 0x80, 0x80));
+				rect.setOutlineThickness(1);
+				m_Window.draw(rect);
+			}
+			else if (line == m_nCursorLine)
 			{
 				// highlight line
 				sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
@@ -2173,29 +2193,6 @@ m_Window.setVerticalSyncEnabled(true);
 				rect.setOutlineColor(sf::Color::White);
 				rect.setOutlineThickness(1);
 				m_Window.draw(rect);
-			}
-			else if (m_nMouseX >= m_nListLeft && mouse_y >= it.m_nYTop && mouse_y < bottom)
-			{
-				if (it.m_bIsClickable)
-				{
-					// soft highlight line
-					sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
-					rect.setPosition(1, (float)it.m_nYTop);
-					rect.setFillColor(sf::Color(0x00, 0xa0, 0xff));
-					rect.setOutlineColor(sf::Color(0x80, 0x80, 0x80));
-					rect.setOutlineThickness(1);
-					m_Window.draw(rect);
-				}
-				else
-				{
-					// draw hollow frame
-					sf::RoundedRectangleShape rect(sf::Vector2f((float)m_nListWidth - 2.f, (float)(it.m_nYBottom - it.m_nYTop) - 1), 9.f, 10);
-					rect.setPosition(1, (float)it.m_nYTop);
-					rect.setFillColor(sf::Color::Transparent);
-					rect.setOutlineColor(sf::Color(0x80, 0x80, 0x80));
-					rect.setOutlineThickness(1);
-					m_Window.draw(rect);
-				}
 			}
 
 			text_x_offset = 0;
