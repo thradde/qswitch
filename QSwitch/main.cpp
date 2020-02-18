@@ -1216,7 +1216,8 @@ public:
 			m_nFontSize(14)
 	{
 #if 0
-		m_strLicense = _T("Registered to: Heinz Hartstein • Heinz-Hartstein@Arcor.de • Erlenweg  55 • 47877 Willich - Neersen");
+		//m_strLicense = _T("Registered to: Heinz Hartstein • Heinz-Hartstein@Arcor.de • Erlenweg  55 • 47877 Willich - Neersen • Deutschland");
+		m_strLicense = _T("Registered to: Ralph Jansen • ralph.jansen@gmx.ch • Gerberweg 57 • 2560 Nidau • Schweiz");
 #endif
 
 		m_enWindowStyle = enWsWindowed;
