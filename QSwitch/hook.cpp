@@ -213,7 +213,7 @@ LRESULT __stdcall MouseHookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 			return 1;
 		}
         else if ((wParam == WM_XBUTTONUP || wParam == WM_XBUTTONDOWN) && gnMouseButton >= 2 &&
-				 (HIWORD(mouseStruct->mouseData) & (gnMouseButton - 1)))
+				 (HIWORD(mouseStruct->mouseData) == gnMouseButton - 1))
         {
 			// we must eat BUTTONDOWN, otherwise the mouse input of this app hangs
 			if (wParam == WM_XBUTTONUP)
