@@ -20,6 +20,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <unordered_map>
 using namespace std;
 
 #include <gl/gl.h>
@@ -142,6 +143,8 @@ bool PickColorDialog(HWND hwndParent, COLORREF &color)
 //															HotKey Control Subclass
 // --------------------------------------------------------------------------------------------------------------------------------------------
 WNDPROC wpOrigEditProc;
+WNDPROC wpOrigCmbProc;
+WNDPROC wpOrigDropDownProc;
 
 // instance data of hotkey control (so we can have multiple hotkey controls in the same dialog)
 class CHotkeyData
@@ -165,7 +168,7 @@ public:
 	}
 };
 
-typedef map<HWND, CHotkeyData> THotkeyData;
+typedef unordered_map<HWND, CHotkeyData> THotkeyData;
 typedef THotkeyData::iterator THotkeyDataIter;
 
 THotkeyData mapHotkeyData;
@@ -192,7 +195,7 @@ THotkeyData mapHotkeyData;
 // WM_SYSKEYDOWN	Calls the DefWindowProc function if the key is ENTER, TAB, SPACE BAR, DEL, ESC, or BACKSPACE.If the key is SHIFT, CTRL, or ALT, it checks whether the combination is valid and, if it is, sets the hot key using the combination.All other keys are set as hot keys without their validity being checked first.
 // WM_SYSKEYUP		Retrieves the virtual key code.
 
-// Edit Subclass procedure
+// Edit Hotkey Subclass procedure
 LRESULT APIENTRY EditHotkeyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CHotkeyData &data = mapHotkeyData[hwnd];
@@ -337,6 +340,58 @@ LRESULT APIENTRY EditHotkeyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
+// Combobox Drop Down List Subclass procedure
+LRESULT APIENTRY CmbDropDownProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_XBUTTONUP:
+		{
+			WORD btn = HIWORD(wParam);
+			if (btn <= 5)
+			{
+				SendMessage(hwnd, LB_SETCURSEL, btn + 1, 0);
+				PostMessage(hwnd, WM_KEYDOWN, VK_ESCAPE, 1);
+			}
+
+			return 0;
+		}
+		break;
+
+	case WM_MBUTTONUP:
+		SendMessage(hwnd, LB_SETCURSEL, 1, 0);
+		PostMessage(hwnd, WM_KEYDOWN, VK_ESCAPE, 1);
+		break;
+	}
+
+	return CallWindowProc(wpOrigDropDownProc, hwnd, uMsg, wParam, lParam);
+}
+
+
+// Combobox Mouse Button Subclass procedure
+LRESULT APIENTRY CmbMouseBtnProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_XBUTTONUP:
+		{
+			WORD btn = HIWORD(wParam);
+			if (btn <= 5)
+				SendMessage(hwnd, CB_SETCURSEL, btn + 1, 0);
+
+			return 0;
+		}
+		break;
+
+	case WM_MBUTTONUP:
+		SendMessage(hwnd, CB_SETCURSEL, 1, 0);
+		break;
+	}
+
+	return CallWindowProc(wpOrigCmbProc, hwnd, uMsg, wParam, lParam);
+}
+
+
 // --------------------------------------------------------------------------------------------------------------------------------------------
 //															DlgProcSettings()
 // --------------------------------------------------------------------------------------------------------------------------------------------
@@ -348,11 +403,20 @@ LRESULT CALLBACK DlgSettings(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 	switch (Msg)
 	{
 	case WM_INITDIALOG:
-		// Subclass the edit control
+		// Subclass the hotkey edit control
 		wpOrigEditProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hWndDlg, ID_HOTKEY), GWLP_WNDPROC, (LONG_PTR)EditHotkeyProc);
 		SetWindowLongPtr(GetDlgItem(hWndDlg, ID_HOTKEY_FILTERED), GWLP_WNDPROC, (LONG_PTR)EditHotkeyProc);
 		SendMessage(GetDlgItem(hWndDlg, ID_HOTKEY), WM_MY_SETKEYS, gbHotkeyModifiers, gbHotkeyVKey);
 		SendMessage(GetDlgItem(hWndDlg, ID_HOTKEY_FILTERED), WM_MY_SETKEYS, gbFilterHotkeyModifiers, gbFilterHotkeyVKey);
+
+		// Subclass the Mouse Button Combobox
+		wpOrigCmbProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hWndDlg, ID_MOUSE_BUTTON), GWLP_WNDPROC, (LONG_PTR)CmbMouseBtnProc);
+
+		// Subclass the drop down list of the Mouse Button Combobox
+		COMBOBOXINFO cbi;
+		cbi.cbSize = sizeof(COMBOBOXINFO);
+		GetComboBoxInfo(GetDlgItem(hWndDlg, ID_MOUSE_BUTTON), &cbi);
+		wpOrigDropDownProc = (WNDPROC)SetWindowLongPtr(cbi.hwndList, GWLP_WNDPROC, (LONG_PTR)CmbDropDownProc);
 
 		hWndComboBox = GetDlgItem(hWndDlg, ID_MOUSE_BUTTON);
 		SendMessage(hWndComboBox, CB_ADDSTRING, 0, (LPARAM)_T("None"));
