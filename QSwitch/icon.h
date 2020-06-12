@@ -51,6 +51,10 @@ public:
 
 	CBitmap &operator=(const CBitmap &other)
 	{
+		// self-assignment guard
+		if (this == &other)
+			return *this;
+
 		FreeBitmap();
 		m_Size = other.m_Size;
 
@@ -133,6 +137,10 @@ public:
 
 	CIcon &operator=(const CIcon &other)
 	{
+		// self-assignment guard
+		if (this == &other)
+			return *this;
+
 		m_strProcess = other.m_strProcess;
 		m_Bitmap = other.m_Bitmap;
 		m_DrawTexture = other.m_DrawTexture;
