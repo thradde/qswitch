@@ -14,14 +14,14 @@ public:
 
 public:
 	CSize()
-		: x(0),
-		y(0)
+		: x(0)
+		, y(0)
 	{
 	}
 
 	CSize(int xx, int yy)
-		: x(xx),
-		y(yy)
+		: x(xx)
+		, y(yy)
 	{
 	}
 };
@@ -51,6 +51,7 @@ public:
 
 	CBitmap &operator=(const CBitmap &other)
 	{
+		FreeBitmap();
 		m_Size = other.m_Size;
 
 		if (other.m_pBitmap)
@@ -106,9 +107,6 @@ public:
 	{
 		return m_Size.x * m_Size.y * 4;		// RGBA = 4 bytes per pixel
 	}
-
-	void Read(Stream &stream);
-	void Write(Stream &stream) const;
 };
 
 

@@ -5,6 +5,8 @@
 #include <Windowsx.h>
 #include <Commctrl.h>
 
+#include "memdebug.h"
+
 #include <SFML/Graphics.hpp>
 #include "RoundedRectangleShape.h"
 
@@ -867,7 +869,7 @@ BOOL CALLBACK WindowEnumCallback(HWND hWnd, LPARAM lParam)
 			return TRUE;		// continue search
 
 		RString proc_name = GetProcessName(hWnd);
-		((TWindowDescArray *)lParam)->push_back(CWindowDesc(hWnd, proc_name, title));
+		((TWindowDescArray *)lParam)->emplace_back(hWnd, proc_name, title);		// CWindowDesc(hWnd, proc_name, title));
 	}
 
 	return TRUE;		// continue search
@@ -1014,7 +1016,7 @@ void CWinGroup::BuildGroups(RString path)
 			{
 				// we have an identical leading path
 				if (m_Group[i].m_Group.empty())
-					m_Group[i].m_Group.push_back(CWinGroup(m_Group[i].m_GroupHeader));
+					m_Group[i].m_Group.emplace_back(m_Group[i].m_GroupHeader);	// CWinGroup(m_Group[i].m_GroupHeader));
 				m_Group[i].m_Group.push_back(m_Group[n]);
 				m_Group[n].m_bMarkForDelete = true;
 
@@ -1107,15 +1109,15 @@ void GroupWindows(const TWindowDescArray &WinDesc, TWinGroupArray &WinGroups)
 			if (it_group.m_GroupHeader.m_strProcess == process)
 			{
 				if (it_group.m_Group.empty())
-					it_group.m_Group.push_back(CWinGroup(it_group.m_GroupHeader));
-				it_group.m_Group.push_back(CWinGroup(it));
+					it_group.m_Group.emplace_back(it_group.m_GroupHeader);		// CWinGroup(it_group.m_GroupHeader));
+				it_group.m_Group.emplace_back(it);		// CWinGroup(it));
 				found = true;
 				break;
 			}
 		}
 
 		if (!found)
-			WinGroups.push_back(CWinGroup(it));
+			WinGroups.emplace_back(it);		// CWinGroup(it));
 	}
 
 	// jetzt identische sub-pfade innerhalb der Gruppen ordnen
@@ -1348,6 +1350,17 @@ public:
 	~CMyApp()
 	{
 		// ReleaseHooks();
+		if (m_pFont)
+			delete m_pFont;
+
+		if (m_pText)
+			delete m_pText;
+
+		if (m_hThumbnailID)
+			DwmUnregisterThumbnail(m_hThumbnailID);
+
+		if (m_BackBitmap)
+			delete[] m_BackBitmap;
 	}
 
 
@@ -2389,12 +2402,10 @@ BOOL CALLBACK WindowSearcher(HWND hWnd, LPARAM lParam)
 // --------------------------------------------------------------------------------------------------------------------------------------------
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	/* test for breaking titles at word boundaries
-	const wchar_t c = L'\u042f'; // cyrillic capital letter ya
-
-	int is = _istalpha(c);
-	is = _istalpha(L'0');
-	*/
+#ifdef _DEBUG
+	// activate memory heap checking at program exit
+	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
 	// Create a mutex with a unique name, so Inno Setup can terminate the program before update / reinstall / uninstall
 	CreateMutex(NULL, FALSE, _T("IS$$Mutex$$") APP_NAME);

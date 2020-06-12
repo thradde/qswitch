@@ -9,6 +9,8 @@
 #include <commctrl.h>
 #include <commoncontrols.h>
 
+#include "memdebug.h"
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 
