@@ -190,14 +190,15 @@
     <ClCompile Include="SystemTraySDK.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\my_resampler.h" />
     <ClInclude Include="configuration.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="generic.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="IconGetter.h" />
+    <ClInclude Include="memdebug.h" />
     <ClInclude Include="Mutex.h" />
+    <ClInclude Include="my_resampler.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="popup_menu.h" />
     <ClInclude Include="resampler.h" />

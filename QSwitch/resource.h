@@ -16,6 +16,7 @@
 #define ID_HOTKEY_FILTERED                      40003
 #define ID_MENU_ABOUT                           40003
 #define ID_MENU_SETTINGS                        40004
+#define ID_MENU_HELP                            40005
 #define ID_COLOR                                40006
 #define ID_GRP_WALLPAPER                        40007
 #define ID_BROWSE_COLOR                         40009

@@ -1,4 +1,20 @@
 
+// Copyright (c) 2020 IDEAL Software GmbH, Neuss, Germany.
+// www.idealsoftware.com
+// Author: Thorsten Radde
+//
+// This program is free software; you can redistribute it and/or modify it under the terms of the GNU 
+// General Public License as published by the Free Software Foundation; either version 2 of the License, 
+// or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU General Public 
+// License for more details.
+//
+// You should have received a copy of the GNU General Public License along with this program; if not, 
+// write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+//
+
 #define STRICT
 #define NOMINMAX
 #include <Windows.h>
@@ -556,6 +572,8 @@ LRESULT CALLBACK TrayNotifyWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARA
 		{
 			gpNotifyApp->SettingsDialog();
 		}
+		else if (wParam == ID_MENU_HELP)
+			ShellExecute(hwnd, _T("open"), _T("http://idealsoftware.com/opensource/qswitch.html"), NULL, NULL, SW_SHOWNORMAL);
 		else if (wParam == ID_MENU_ABOUT)
 			DialogBox(ghInstance, MAKEINTRESOURCE(IDD_ABOUT), gpNotifyApp->GetRenderWindow().getSystemHandle(), reinterpret_cast<DLGPROC>(DlgAbout));
 		else if (wParam == ID_MENU_EXIT)
