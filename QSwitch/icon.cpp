@@ -37,7 +37,6 @@ using namespace std;
 #include "stream.h"
 #include "platform.h"
 #include "generic.h"
-#include "popup_menu.h"
 #include "configuration.h"
 #include "IconGetter.h"
 #include "my_resampler.h"

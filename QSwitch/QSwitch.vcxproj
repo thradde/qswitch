@@ -182,12 +182,12 @@
     <ClCompile Include="IconGetter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="platform.cpp" />
-    <ClCompile Include="popup_menu.cpp" />
     <ClCompile Include="resampler.cpp" />
     <ClCompile Include="RfwString.cpp" />
     <ClCompile Include="RoundedRectangleShape.cpp" />
     <ClCompile Include="stream.cpp" />
     <ClCompile Include="SystemTraySDK.cpp" />
+    <ClCompile Include="TrayIcon.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="configuration.h" />
@@ -200,7 +200,6 @@
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="my_resampler.h" />
     <ClInclude Include="platform.h" />
-    <ClInclude Include="popup_menu.h" />
     <ClInclude Include="resampler.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RfwString.h" />

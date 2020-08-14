@@ -30,9 +30,6 @@
     <ClCompile Include="resampler.cpp">
       <Filter>Libs</Filter>
     </ClCompile>
-    <ClCompile Include="popup_menu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="generic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +57,9 @@
     <ClCompile Include="RoundedRectangleShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TrayIcon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RfwString.h">
@@ -67,9 +67,6 @@
     </ClInclude>
     <ClInclude Include="resampler.h">
       <Filter>Libs</Filter>
-    </ClInclude>
-    <ClInclude Include="popup_menu.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generic.h">
       <Filter>Header Files</Filter>

@@ -43,7 +43,6 @@ using namespace std;
 
 #include <gl/gl.h>
 #include <gl/glu.h>
-//#include <gl/glut.h>
 
 #define ASSERT
 #include "SystemTraySDK.h"
@@ -57,12 +56,7 @@ using namespace std;
 #include "generic.h"
 #include "configuration.h"
 #include "IconGetter.h"
-#include "popup_menu.h"
-//#include "bitmap_cache.h"
 #include "icon.h"
-//#include "icon_page.h"
-//#include "undo.h"
-//#include "icon_manager.h"
 
 #include "TrayIcon.c"		// created with Gimp
 
