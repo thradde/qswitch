@@ -7,7 +7,7 @@
 AppMutex=IS$$Mutex$$QSwitch
 AppName={#MyAppName}
 AppVersion=1.0
-AppCopyright=Copyright (c) 2017 Tenware BV
+AppCopyright=Copyright (c) 2020 IDEAL Software GmbH
 PrivilegesRequired=none
 AppId={{8E92D8E4-59CC-4E7E-A8DB-020B7151B127}
 LicenseFile=..\License.rtf
@@ -18,13 +18,13 @@ DefaultGroupName={#MyAppName}
 DefaultDirName={pf}\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppName}.exe
 OutputBaseFilename={#MyAppName} Setup
-AppPublisher=Tenware BV
-AppPublisherURL=www.tenware.net
-AppSupportURL=www.tenware.net
-AppUpdatesURL=www.tenware.net
+AppPublisher=IDEAL Software GmbH
+AppPublisherURL=www.idealsoftware.com
+AppSupportURL=www.idealsoftware.com
+AppUpdatesURL=www.idealsoftware.com
 VersionInfoVersion=1.0
-VersionInfoCompany=Tenware BV
-VersionInfoCopyright=Copyright (c) 2017 Tenware BV. All rights reserved.
+VersionInfoCompany=IDEAL Software GmbH
+VersionInfoCopyright=Copyright (c) 2020 IDEAL Software GmbH. All rights reserved.
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion=1.0
 VersionInfoProductTextVersion=1.0
@@ -33,7 +33,6 @@ ArchitecturesInstallIn64BitMode=x64
 [Files]
 Source: "..\Release\QSwitch.exe"; DestDir: "{app}"; Flags: ignoreversion 32bit; Check: not IsWin64
 Source: "..\x64\Release\QSwitch.exe"; DestDir: "{app}"; Flags: ignoreversion 64bit; Check: IsWin64
-Source: "..\Readme.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -67,7 +66,6 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; WorkingDir: "{userappdata}\{#MyAppName}"; IconFilename: "{app}\{#MyAppName}.exe"; IconIndex: 0
 Name: "{commonstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; WorkingDir: "{userappdata}\{#MyAppName}"; IconFilename: "{app}\{#MyAppName}.exe"
-Name: "{group}\Readme.txt"; Filename: "{app}\Readme.txt"
 
 [Run]
 Filename: {app}\{#MyAppName}.exe; Description: Run Application; Flags: postinstall nowait skipifsilent

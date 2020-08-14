@@ -212,12 +212,14 @@ LRESULT APIENTRY EditHotkeyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 {
 	CHotkeyData &data = mapHotkeyData[hwnd];
 	BYTE LastHotkeyModifiers;
+	LRESULT lres;
 
 	switch (uMsg)
 	{
 	case WM_GETDLGCODE:
-		return DLGC_WANTCHARS + DLGC_WANTARROWS;
-		// return DLGC_WANTALLKEYS;
+		lres = CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
+		lres |= DLGC_WANTCHARS + DLGC_WANTARROWS;
+		return lres;
 
 	case WM_CREATE:
 		//mapHotkeyData.insert(pair<HWND, CHotkeyData>(hwnd, CHotkeyData())); ==> done by declaration: CHotkeyData &data = mapHotkeyData[hwnd];
@@ -278,7 +280,9 @@ LRESULT APIENTRY EditHotkeyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			break;
 
 		case VK_LWIN:
-		case VK_RWIN:	data.HotkeyModifiers &= ~HotkeyWin; break;
+		case VK_RWIN:
+			data.HotkeyModifiers &= ~HotkeyWin;
+			break;
 
 		case VK_TAB:
 			break;
@@ -313,8 +317,8 @@ LRESULT APIENTRY EditHotkeyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			data.VirtKeyCode = 0;
 			break;
 
-		case VK_RETURN:
 		case VK_TAB:
+		case VK_RETURN:
 		case VK_ESCAPE:
 			return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
 
@@ -411,11 +415,14 @@ LRESULT CALLBACK DlgSettings(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 {
 	HWND hWndComboBox;
 	static COLORREF clrTmpBkgColor;
+	static bool org_suspend_hooks;
 
 	switch (Msg)
 	{
 	case WM_INITDIALOG:
 		// Subclass the hotkey edit control
+		org_suspend_hooks = gbSuspendHooks;
+		gbSuspendHooks = true;
 		wpOrigEditProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hWndDlg, ID_HOTKEY), GWLP_WNDPROC, (LONG_PTR)EditHotkeyProc);
 		SetWindowLongPtr(GetDlgItem(hWndDlg, ID_HOTKEY_FILTERED), GWLP_WNDPROC, (LONG_PTR)EditHotkeyProc);
 		SendMessage(GetDlgItem(hWndDlg, ID_HOTKEY), WM_MY_SETKEYS, gbHotkeyModifiers, gbHotkeyVKey);
@@ -455,6 +462,7 @@ LRESULT CALLBACK DlgSettings(HWND hWndDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		// Remove the subclass from the edit control.
 		SetWindowLongPtr(GetDlgItem(hWndDlg, ID_HOTKEY), GWLP_WNDPROC, (LONG_PTR)wpOrigEditProc);
 		SetWindowLongPtr(GetDlgItem(hWndDlg, ID_HOTKEY_FILTERED), GWLP_WNDPROC, (LONG_PTR)wpOrigEditProc);
+		gbSuspendHooks = org_suspend_hooks;
 		break;
 
 	case WM_HSCROLL:	// trackbar notification
