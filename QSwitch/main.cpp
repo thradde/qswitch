@@ -78,14 +78,6 @@ bool gbTerminateActivityThread;
 unsigned __stdcall ActivityThread(void *param);
 unsigned __stdcall ResyncThread(void *param);
 
-/*
-todo:
-- Scrollen, wenn mouse-down und dann mouse-move (mit mindest-move-pixel > 2 oder > 3), so dass also Touch-Scroll möglich ist
-
-Kostenfreie Version:
-- Nach 30 Tagen bei jedem SW_SHOW ==> NAG Screen zum wegklicken
-*/
-
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 //																	Macros
@@ -671,7 +663,7 @@ DIBitmap CopyScreen(int x, int y, int width, int height)
 {
 	HDC dc = ::GetDC(NULL);		// get the desktop device context
 
-								// create RGBA device context using a DIBSection
+	// create RGBA device context using a DIBSection
 	BITMAPV5HEADER h;
 	InitializeBitmapHeader(&h, width, height);
 	DIBitmap bits;
@@ -889,7 +881,7 @@ BOOL CALLBACK WindowEnumCallback(HWND hWnd, LPARAM lParam)
 			return TRUE;		// continue search
 
 		RString proc_name = GetProcessName(hWnd);
-		((TWindowDescArray *)lParam)->emplace_back(hWnd, proc_name, title);		// CWindowDesc(hWnd, proc_name, title));
+		((TWindowDescArray *)lParam)->emplace_back(hWnd, proc_name, title);
 	}
 
 	return TRUE;		// continue search
@@ -982,19 +974,6 @@ void CWinGroup::BuildGroups(RString path)
 	if (path_len > 0)
 	{
 		// remove common leading path for whole group
-#if 0
-		for (auto &&it : m_Group)
-		{
-			if (path == it.m_GroupHeader.m_strTitle.left(path_len))
-			{
-				if (it.m_GroupHeader.m_strTitle.substr(path_len).empty())
-				{
-					sort(m_Group.begin(), m_Group.end());
-					return;
-				}
-			}
-		}
-#endif
 		for (auto &&it : m_Group)
 		{
 			if (path == it.m_GroupHeader.m_strTitle.left(path_len))
@@ -1036,7 +1015,7 @@ void CWinGroup::BuildGroups(RString path)
 			{
 				// we have an identical leading path
 				if (m_Group[i].m_Group.empty())
-					m_Group[i].m_Group.emplace_back(m_Group[i].m_GroupHeader);	// CWinGroup(m_Group[i].m_GroupHeader));
+					m_Group[i].m_Group.emplace_back(m_Group[i].m_GroupHeader);
 				m_Group[i].m_Group.push_back(m_Group[n]);
 				m_Group[n].m_bMarkForDelete = true;
 
@@ -1082,10 +1061,10 @@ void CWinGroup::BuildGroups(RString path)
 		m_Group.erase(m_Group.begin());
 	}
 
-	// sortieren
+	// sort
 	sort(m_Group.begin(), m_Group.end());
 
-	// wenn ein sub-pfad und ein Gruppenname identisch sind, dann den Gruppennamen verbergen
+	// if a sub-path and a group name are identical, then hide the group name
 	// eg:	e:\
 	//			Recording		<== is an open folder
 	//			Recording\		<== is a group title that needs to be hidden
@@ -1129,8 +1108,8 @@ void GroupWindows(const TWindowDescArray &WinDesc, TWinGroupArray &WinGroups)
 			if (it_group.m_GroupHeader.m_strProcess == process)
 			{
 				if (it_group.m_Group.empty())
-					it_group.m_Group.emplace_back(it_group.m_GroupHeader);		// CWinGroup(it_group.m_GroupHeader));
-				it_group.m_Group.emplace_back(it);		// CWinGroup(it));
+					it_group.m_Group.emplace_back(it_group.m_GroupHeader);
+				it_group.m_Group.emplace_back(it);
 				found = true;
 				break;
 			}
@@ -1140,11 +1119,11 @@ void GroupWindows(const TWindowDescArray &WinDesc, TWinGroupArray &WinGroups)
 			WinGroups.emplace_back(it);		// CWinGroup(it));
 	}
 
-	// jetzt identische sub-pfade innerhalb der Gruppen ordnen
+	// now order identical sub-paths within groups
 	for (auto &&it_group : WinGroups)
 		it_group.BuildGroups(_T(""));
 
-	// sortieren
+	// sort
 	sort(WinGroups.begin(), WinGroups.end());
 }
 
@@ -1304,11 +1283,6 @@ public:
 			m_bFirstTime(false),
 			m_nFontSize(14)
 	{
-#if 0
-		//m_strLicense = _T("Registered to: Heinz Hartstein • Heinz-Hartstein@Arcor.de • Erlenweg  55 • 47877 Willich - Neersen • Deutschland");
-		m_strLicense = _T("Registered to: Ralph Jansen • ralph.jansen@gmx.ch • Gerberweg 57 • 2560 Nidau • Schweiz");
-#endif
-
 		m_enWindowStyle = enWsWindowed;
 		gbHotkeyVKey = 0;		// virtual key code for app activation
 		gbHotkeyModifiers = 0;	// modifiers for app activation (shift, ctrl, alt)
@@ -1333,7 +1307,6 @@ public:
 
 		bool have_settings = TestWriteAccess(m_strSettingsPath);
 
-#if 1
 		if (have_settings)
 		{
 			try
@@ -1360,7 +1333,6 @@ public:
 
 			m_bFirstTime = true;
 		}
-#endif
 	}
 
 
@@ -1411,8 +1383,8 @@ public:
 		}
 
 		// setup initial view, used for drawing the background and other static parts (page indicators, activity indicators)
-		float w = (float)m_nWindowWidth;	// m_Window.getSize().x;
-		float h = (float)m_nWindowHeight;	// m_Window.getSize().y;
+		float w = (float)m_nWindowWidth;
+		float h = (float)m_nWindowHeight;
 		m_InitialView.setSize(w, h);
 		m_InitialView.setCenter(w / 2.f, h / 2.f);
 		m_Window.setView(m_InitialView);
@@ -1493,7 +1465,7 @@ public:
 			m_pText = new sf::Text();
 			m_pText->setFont(m_pFont->GetSfmlFont());
 			m_pText->setColor(sf::Color::White);
-			m_pText->setStyle(sf::Text::Regular);		// sf::Text::Bold         sf::Text::Regular
+			m_pText->setStyle(sf::Text::Regular);
 		}
 
 		// use desktop.height to scale font size
@@ -1528,49 +1500,15 @@ public:
 		SetHookInstance(ghInstance);
 
 		if (m_bStartup && !m_bFirstTime)
-		{
-//			ShowWindow(hWnd, SW_HIDE);
 			m_bFirstTime = false;
-		}
-
-		/* does not work, because we have a pseudo-rounded window (by using a bitmap)
-		   and using real rounded corners does not work with OpenGL
-		// use DWM to create a drop-shadow, even if our window has no window style
-		DWORD attr = DWMNCRP_ENABLED;
-		DwmSetWindowAttribute(hWnd, DWMWA_NCRENDERING_POLICY, &attr, sizeof(attr));
-		MARGINS margins = { 25, 25, 25, 25 };
-		DwmExtendFrameIntoClientArea(hWnd, &margins); */
-
-#if 0
-		SetWindowLongPtr(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-//		SetLayeredWindowAttributes(hWnd, 0, 210, LWA_ALPHA);		// LWA_COLORKEY seems not to work for OpenGL Windows
-//		SetLayeredWindowAttributes(hWnd, m_BkgColor.toInteger(), 210, LWA_COLORKEY);
-		SetLayeredWindowAttributes(hWnd, 0, 0, LWA_COLORKEY);
-#endif
-
-		/*
-		HRGN rgn = CreateRoundRectRgn(	0, 0,
-										width, height,
-										20, 20);
-		 SetWindowRgn(hWnd, rgn, TRUE);
-		 */
 
 		// Send all menu messages to MainWindow
 		gTrayIcon.SetTargetWnd(CreateTrayNotifyWindow(this));
 
-		// Compute Layout, Create Font
-		//m_bDrawActivityOnly = true;
-
-		// HINT: removing the call to FramerateLimit, enabling vsync, adjusting the timing using Sleep() and setting 
-		// "Threaded Optimization = Off" in the nVidia driver panel finally did the trick.
-		// (whatever Threaded Optimization means... found it using google)
-		//	m_Window.setFramerateLimit(60);
-//m_Window.setVerticalSyncEnabled(true);
-m_Window.setFramerateLimit(0);
-m_Window.setVerticalSyncEnabled(true);
+		m_Window.setFramerateLimit(0);
+		m_Window.setVerticalSyncEnabled(true);
 
 		m_bStartup = false;
-		//CheckNagScreen();		==> done in ShowMainWindow()
 
 		m_hwndThumbTarget = CreateThumbnailWindow(this);
 
@@ -1578,32 +1516,6 @@ m_Window.setVerticalSyncEnabled(true);
 
 		//ShowMainWindow();		// for debugging
 		ShowWindow(m_Window.getSystemHandle(), SW_HIDE);
-	}
-
-
-	// --------------------------------------------------------------------------------------------------------------------------------------------
-	//															CMyApp::CheckNagScreen()
-	// --------------------------------------------------------------------------------------------------------------------------------------------
-	void CheckNagScreen()
-	{
-#if 0
-		SYSTEMTIME time;
-		
-		GetSystemTime(&time);
-
-		// don't make it too easy, scramble a bit (so year constant can not be found in hex editor)
-		time.wYear -= 2000;
-
-		// run until 2019/01/01
-		if (time.wYear >= 19 && time.wMonth >= 1)
-		{
-			MessageBox(m_Window.getSystemHandle(),
-				_T("The beta period for \"" APP_NAME "\" has expired.\n\n")
-				_T("Please check at www.tenware.net, if a newer version is available.\n\n"),
-				APP_NAME, MB_ICONERROR);
-			exit(1);
-		}
-#endif
 	}
 
 
@@ -1650,20 +1562,14 @@ m_Window.setVerticalSyncEnabled(true);
 
 		m_bFilteredView = filter;
 
-		/*if (IsWindowVisible(m_Window.getSystemHandle()))
-		{
-			SetFocus(m_Window.getSystemHandle());
-			return;
-		}*/
-
 		if (!IsWindowVisible(m_Window.getSystemHandle()))
 		{
 			m_hwndForeground = GetForegroundWindow();
-#if 1
+
 			if (m_BackBitmap)
 				delete[] m_BackBitmap;
 			m_BackBitmap = CopyScreen(m_nLeft, m_nTop, m_nWindowWidth, m_nWindowHeight);
-#endif
+
 			m_BackTexture.create(m_nWindowWidth, m_nWindowHeight);
 			m_BackTexture.update((sf::Uint8 *)m_BackBitmap);
 			m_BackTexture.setSmooth(true);
@@ -1709,7 +1615,6 @@ m_Window.setVerticalSyncEnabled(true);
 			SetFocus(m_Window.getSystemHandle());
 			SetForegroundWindowInternal(m_Window.getSystemHandle());
 			gbEatSingleClick = false;
-			CheckNagScreen();
 		}
 	}
 	
@@ -1758,7 +1663,6 @@ m_Window.setVerticalSyncEnabled(true);
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	bool OnClose() override
 	{
-		//SaveSettings();		// save always, so current page number is saved
 		return true;
 	}
 
@@ -1786,7 +1690,7 @@ m_Window.setVerticalSyncEnabled(true);
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	void OnMouseDown(const sf::Event &event) override
 	{
-		int mouse_x = event.mouseButton.x;	// +m_IconManager.GetCurrentPageNum() * gConfig.m_nWindowWidth;
+		int mouse_x = event.mouseButton.x;
 		int mouse_y = event.mouseButton.y;
 
 		if (event.mouseButton.button == sf::Mouse::Left)
@@ -1869,9 +1773,6 @@ m_Window.setVerticalSyncEnabled(true);
 				ShowWindow(m_Window.getSystemHandle(), SW_HIDE);
 			}
 		}
-		else if (event.mouseButton.button == sf::Mouse::Right)
-		{
-		}
 	}
 
 
@@ -1880,7 +1781,7 @@ m_Window.setVerticalSyncEnabled(true);
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	void OnMouseMove(const sf::Event &event) override
 	{
-		m_nMouseX = event.mouseMove.x;	// +m_IconManager.GetCurrentPageNum() * gConfig.m_nWindowWidth;
+		m_nMouseX = event.mouseMove.x;
 		m_nMouseY = event.mouseMove.y;
 	}
 
@@ -1959,14 +1860,14 @@ m_Window.setVerticalSyncEnabled(true);
 		int view_top = m_Windows[m_nTopLine].m_nYTop;
 		while (cursor_top < view_top)
 		{
-			ScrollUp();		// m_View.move(0, (float)(cursor_top - view_top));
+			ScrollUp();
 			view_top = m_Windows[m_nTopLine].m_nYTop;
 		}
 
 		int view_bottom = view_top + (int)m_View.getSize().y;
 		while (cursor_bottom > view_bottom)
 		{
-			ScrollDown();	// m_View.move(0, (float)(cursor_bottom - view_bottom));
+			ScrollDown();
 			view_top = m_Windows[m_nTopLine].m_nYTop;
 			view_bottom = view_top + (int)m_View.getSize().y;
 		}
@@ -2181,7 +2082,6 @@ m_Window.setVerticalSyncEnabled(true);
 	// --------------------------------------------------------------------------------------------------------------------------------------------
 	void RegisterThumbnail(HWND hwndSource)
 	{
-//return;
 		HRESULT hr;
 
 		// Register the thumbnail
@@ -2350,16 +2250,13 @@ m_Window.setVerticalSyncEnabled(true);
 			sf::Color text_color;
 			if (it.m_bIsClickable)
 			{
-				text_color = sf::Color(235, 235, 235);	// sf::Color(220, 220, 220);
-				m_pText->setStyle(sf::Text::Regular);	// sf::Text::Italic | sf::Text::Bold);
-				//m_pText->setCharacterSize(14);
+				text_color = sf::Color(235, 235, 235);
+				m_pText->setStyle(sf::Text::Regular);
 			}
 			else
 			{
-				// text_color = sf::Color(28, 134, 238);
 				text_color = sf::Color(0xff, 0x80, 0);
-				m_pText->setStyle(sf::Text::Regular);	// (sf::Text::Regular);
-				//m_pText->setCharacterSize(14);
+				m_pText->setStyle(sf::Text::Regular);
 			}
 
 			text_y_offset += (line_spacing - text_line_spacing) / 2;

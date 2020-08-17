@@ -25,10 +25,10 @@
 #include <commctrl.h>
 #include <commoncontrols.h>
 
-#include "memdebug.h"
-
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+#include "memdebug.h"
 
 #include "IconGetter.h"
 
@@ -68,7 +68,6 @@ void MyAlphaBlend(DIBitmap source, const SIZE &size)
 }
 
 
-#if 1
 DIBitmap BlurEdges(DIBitmap source, int size_x, int size_y)
 {
 #define GetPixel(x, y)		source[y * size_x + x]
@@ -141,7 +140,7 @@ quit_loop:
 							// read for this pixel all neighboring pixels into a matrix
 							uint32 matrix[9];
 							for (int i = 0; i < 9; i++)
-									matrix[i] = 0; // 0xffffff00;
+									matrix[i] = 0;
 
 							if (yy > 0)
 							{
@@ -206,23 +205,12 @@ quit_loop:
 									avg += 0x10;	// aufhellen
 								else
 									avg -= 0x10;	// alpha channel transparenter machen
-#if 1
+
 								if (avg < 0.f)
 									avg = 0.f;
 								else if (avg > 255.f)
 									avg = 255.f;
 								new_pixel |= ((int)avg << component);
-#else
-								avg /= 255.f;
-								component_value = (np >> component) & 0xff;
-								/*
-								if (component_value == 0)
-									component_value = (int)(64.f * avg);
-								else
-								*/
-									component_value = (int)((float)component_value * avg);
-								new_pixel |= (component_value << component);
-#endif
 							}
 
 							SetPixel(xx, yy, new_pixel);
@@ -235,7 +223,6 @@ quit_loop:
 
 	return target;
 }
-#endif
 
 
 // Selective Gaussian Blur - taken from gimp/plug-ins/blur-gauss-selective.c
@@ -435,7 +422,6 @@ bool MyGetIconInfo(HICON hIcon, MyIconInfo &info)
 
 HICON GetIcon(LPCTSTR filePath)
 {
-#if 1
 	// Get the icon index using SHGetFileInfo
 	SHFILEINFO sfi = { 0 };
 	SHGetFileInfo(filePath, 0, &sfi, sizeof(sfi), SHGFI_SYSICONINDEX);
@@ -456,14 +442,6 @@ HICON GetIcon(LPCTSTR filePath)
 		if (hResult == S_OK)
 			return hIcon;
 	}
-#else
-	// Get the icon index using SHGetFileInfo
-	SHFILEINFO sfi = { 0 };
-	if (SHGetFileInfo(filePath, 0, &sfi, sizeof(sfi), SHGFI_ICON | SHGFI_LARGEICON))
-	{
-		return sfi.hIcon;
-	}
-#endif
 
 	return nullptr;
 }
@@ -631,17 +609,6 @@ bool IsResized(DIBitmap org_bitmap, const SIZE &size)
 // If thumbnail is true, for images and other files a thumbnail is returned.
 DIBitmap GetIconBitmap(LPCTSTR filePath, int &pixels, bool thumbnail)
 {
-#if 0
-	// for testing / debugging
-	if (pixels == 48)
-	{
-		size_t num_pixels = pixels * pixels;
-		uint32 *bitmap = new uint32[num_pixels];
-		memset(bitmap, 0xaa, num_pixels * 4);
-		return bitmap;
-	}
-	return NULL;
-#else
 	// Getting the IShellItemImageFactory interface pointer for the file.
 	IShellItemImageFactory *pImageFactory;
 	HRESULT hr = SHCreateItemFromParsingName(filePath, NULL, IID_PPV_ARGS(&pImageFactory));
@@ -680,68 +647,11 @@ DIBitmap GetIconBitmap(LPCTSTR filePath, int &pixels, bool thumbnail)
 		DIBitmap top_down = MakeBmpTopDown(bitmap, size);
 		delete[] bitmap;
 
-//		MyAlphaBlend(top_down, new_size);
 		return top_down;
-
-		// blur
-//		DIBitmap blurred = sel_gauss(top_down, width, height, 10, 80);
-		DIBitmap blurred = BlurEdges(top_down, width, height);
-		delete[] top_down;
-#if 1
-		return blurred;
-#else
-		DIBitmap b2 = BlurEdges(blurred, width, height);
-		delete[] blurred;
-		return b2;
-#endif
 	}
 
 	DeleteObject(hBmp);
 	return nullptr;
-
-	/*
-	BITMAPINFO bmi;
-	memset(&bmi, 0, sizeof(BITMAPINFO)); 
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = width;
-	bmi.bmiHeader.biHeight = -height;
-	bmi.bmiHeader.biBitCount = 24;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biCompression = BI_RGB;
-	bmi.bmiHeader.biSizeImage     = 0;
-	bmi.bmiHeader.biXPelsPerMeter = 0;
-	bmi.bmiHeader.biYPelsPerMeter = 0;
-	bmi.bmiHeader.biClrUsed       = 0;
-	bmi.bmiHeader.biClrImportant  = 0;
-
-	size_t num_pixels = size.cx * size.cy;
-	uint32 *bits = new uint32[num_pixels];
-	HDC hdc = ::GetDC(NULL);
-	HDC sourceHdc = ::CreateCompatibleDC(hdc);
-	::SelectObject(sourceHdc, hBmp);
-	int ret = GetDIBits(
-		sourceHdc,
-		hBmp,
-		0,
-		256,
-		(void **)&bits,
-		(LPBITMAPINFO)&bmi,
-		DIB_RGB_COLORS);
-	*/
-
-	DeleteObject(hBmp);
-//	DeleteDC(sourceHdc);
-//	::ReleaseDC(NULL, hdc);
-
-#if 0
-	DIBitmap bitmap = nullptr;
-	if (ret)
-		bitmap = BGRA2RGBA(bits, size);
-
-	delete[] bits;
-	return bitmap;
-#endif
-#endif
 }
 
 
@@ -763,11 +673,8 @@ bool PixelsHaveAlpha(const uint32* pixels, size_t num_pixels)
 DIBitmap CreateDIBitmapFromHICON(HICON icon, int size_x, int size_y)
 {
 	// We start with validating parameters.
-	//ICONINFO icon_info;
-	if (!icon) // || !::GetIconInfo(icon, &icon_info))
-	{
+	if (!icon)
 		return nullptr;
-	}
 
 	// Now we should create a DIB so that we can use ::DrawIconEx in order to
 	// obtain the icon's image.
@@ -874,17 +781,6 @@ DIBitmap CreateDIBitmapFromHICON2(HICON hIcon, int &size_x, int &size_y)
 			DIBitmap top_down = MakeBmpTopDown(bitmap, size);
 			delete[] bitmap;
 			return top_down;
-
-			// blur
-	//		DIBitmap blurred = sel_gauss(top_down, width, height, 10, 80);
-			DIBitmap blurred = BlurEdges(top_down, size_x, size_y);
-			delete[] top_down;
-			return blurred;
-			/*
-			DIBitmap b2 = BlurEdges(blurred, width, height);
-			delete[] blurred;
-			return b2;
-			*/
 		}
 	}
 
@@ -895,7 +791,6 @@ DIBitmap CreateDIBitmapFromHICON2(HICON hIcon, int &size_x, int &size_y)
 
 	return nullptr;
 }
-
 
 
 // Returns a DIBitmap. The DIBitmap is allocated using new[] and must be deleted[] by the caller!

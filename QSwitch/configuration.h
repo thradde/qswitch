@@ -32,7 +32,7 @@ public:
 public:
 	CSettings()
 		:	m_nBkgTransparency(1),				// use 15 if bkg_color is black
-			m_clrBkgColor(RGB(13, 13, 13)),	// (26, 42, 77)		(35, 56, 102)		(0x0a, 0x3b, 0x76)),
+			m_clrBkgColor(RGB(13, 13, 13)),
 			m_bDisableIfMaxWin(true)
 	{
 	}
@@ -48,10 +48,4 @@ public:
 			m_nBkgTransparency	!= rhs.m_nBkgTransparency ||
 			m_clrBkgColor	!= rhs.m_clrBkgColor;
 	}
-
-	/* bool operator !=(const CSettings &rhs) const
-	{
-		return
-			BkgChanged(rhs);
-	} */
 };
