@@ -1,5 +1,7 @@
 # QSwitch: Windows Task Switcher
 
+![Screenshot](screenshot_small.png)
+
 ## Design Goals
 Locate and switch to any open window as fast as possible.
 
